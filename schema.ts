@@ -3,13 +3,17 @@
 
 import { list } from '@keystone-6/core';
 import { checkbox, password, relationship, text, timestamp, select } from '@keystone-6/core/fields';
+import config from './koyu'
 
 export const lists = {
+  // Keystone core
   Task: list({
     fields: {
-      label: text({ isRequired: true }),
+      label: text({ validation: {
+        isRequired: true
+      } }),
       priority: select({
-        dataType: 'enum',
+        type: 'enum',
         options: [
           { label: 'Low', value: 'low' },
           { label: 'Medium', value: 'medium' },
@@ -17,22 +21,25 @@ export const lists = {
         ],
       }),
       isComplete: checkbox(),
-      assignedTo: relationship({ ref: 'Person.tasks', many: false }),
+      assignedTo: relationship({ ref: 'User.tasks', many: false }),
       finishBy: timestamp(),
     },
   }),
-  Person: list({
+  User: list({
     fields: {
-      name: text({ isRequired: true }),
+      name: text({ validation: {isRequired: true} }),
       // Added an email and password pair to be used with authentication
       // The email address is going to be used as the identity field, so it's
       // important that we set both isRequired and isUnique
-      email: text({ isRequired: true, isUnique: true, isIndexed: 'unique' }),
+      email: text({ validation: {isRequired: true}, isIndexed: 'unique' }),
       // The password field stores a hash of the supplied password, and
       // we want to ensure that all people have a password set, so we use
       // the isRequired flag.
-      password: password({ isRequired: true }),
+      password: password({ validation: {isRequired: true} }),
       tasks: relationship({ ref: 'Task.assignedTo', many: true }),
+      role: relationship({ ref: 'Role.user', many: true }),
     },
   }),
+  // Koyu plugins
+  ...config.plugins,
 };

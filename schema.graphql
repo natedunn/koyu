@@ -4,10 +4,16 @@
 type Task {
   id: ID!
   label: String
-  priority: String
+  priority: TaskPriorityType
   isComplete: Boolean
-  assignedTo: Person
+  assignedTo: User
   finishBy: DateTime
+}
+
+enum TaskPriorityType {
+  low
+  medium
+  high
 }
 
 scalar DateTime
@@ -23,9 +29,9 @@ input TaskWhereInput {
   NOT: [TaskWhereInput!]
   id: IDFilter
   label: StringFilter
-  priority: StringNullableFilter
+  priority: TaskPriorityTypeNullableFilter
   isComplete: BooleanFilter
-  assignedTo: PersonWhereInput
+  assignedTo: UserWhereInput
   finishBy: DateTimeNullableFilter
 }
 
@@ -74,33 +80,11 @@ input NestedStringFilter {
   not: NestedStringFilter
 }
 
-input StringNullableFilter {
-  equals: String
-  in: [String!]
-  notIn: [String!]
-  lt: String
-  lte: String
-  gt: String
-  gte: String
-  contains: String
-  startsWith: String
-  endsWith: String
-  mode: QueryMode
-  not: NestedStringNullableFilter
-}
-
-input NestedStringNullableFilter {
-  equals: String
-  in: [String!]
-  notIn: [String!]
-  lt: String
-  lte: String
-  gt: String
-  gte: String
-  contains: String
-  startsWith: String
-  endsWith: String
-  not: NestedStringNullableFilter
+input TaskPriorityTypeNullableFilter {
+  equals: TaskPriorityType
+  in: [TaskPriorityType!]
+  notIn: [TaskPriorityType!]
+  not: TaskPriorityTypeNullableFilter
 }
 
 input BooleanFilter {
@@ -134,15 +118,15 @@ enum OrderDirection {
 
 input TaskUpdateInput {
   label: String
-  priority: String
+  priority: TaskPriorityType
   isComplete: Boolean
-  assignedTo: PersonRelateToOneForUpdateInput
+  assignedTo: UserRelateToOneForUpdateInput
   finishBy: DateTime
 }
 
-input PersonRelateToOneForUpdateInput {
-  create: PersonCreateInput
-  connect: PersonWhereUniqueInput
+input UserRelateToOneForUpdateInput {
+  create: UserCreateInput
+  connect: UserWhereUniqueInput
   disconnect: Boolean
 }
 
@@ -153,18 +137,18 @@ input TaskUpdateArgs {
 
 input TaskCreateInput {
   label: String
-  priority: String
+  priority: TaskPriorityType
   isComplete: Boolean
-  assignedTo: PersonRelateToOneForCreateInput
+  assignedTo: UserRelateToOneForCreateInput
   finishBy: DateTime
 }
 
-input PersonRelateToOneForCreateInput {
-  create: PersonCreateInput
-  connect: PersonWhereUniqueInput
+input UserRelateToOneForCreateInput {
+  create: UserCreateInput
+  connect: UserWhereUniqueInput
 }
 
-type Person {
+type User {
   id: ID!
   name: String
   email: String
@@ -176,30 +160,33 @@ type Person {
     skip: Int! = 0
   ): [Task!]
   tasksCount(where: TaskWhereInput! = {}): Int
+  role(
+    where: RoleWhereInput! = {}
+    orderBy: [RoleOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+  ): [Role!]
+  roleCount(where: RoleWhereInput! = {}): Int
 }
 
 type PasswordState {
   isSet: Boolean!
 }
 
-input PersonWhereUniqueInput {
+input UserWhereUniqueInput {
   id: ID
   email: String
 }
 
-input PersonWhereInput {
-  AND: [PersonWhereInput!]
-  OR: [PersonWhereInput!]
-  NOT: [PersonWhereInput!]
+input UserWhereInput {
+  AND: [UserWhereInput!]
+  OR: [UserWhereInput!]
+  NOT: [UserWhereInput!]
   id: IDFilter
   name: StringFilter
   email: StringFilter
-  password: PasswordFilter
   tasks: TaskManyRelationFilter
-}
-
-input PasswordFilter {
-  isSet: Boolean!
+  role: RoleManyRelationFilter
 }
 
 input TaskManyRelationFilter {
@@ -208,17 +195,24 @@ input TaskManyRelationFilter {
   none: TaskWhereInput
 }
 
-input PersonOrderByInput {
+input RoleManyRelationFilter {
+  every: RoleWhereInput
+  some: RoleWhereInput
+  none: RoleWhereInput
+}
+
+input UserOrderByInput {
   id: OrderDirection
   name: OrderDirection
   email: OrderDirection
 }
 
-input PersonUpdateInput {
+input UserUpdateInput {
   name: String
   email: String
   password: String
   tasks: TaskRelateToManyForUpdateInput
+  role: RoleRelateToManyForUpdateInput
 }
 
 input TaskRelateToManyForUpdateInput {
@@ -228,21 +222,137 @@ input TaskRelateToManyForUpdateInput {
   connect: [TaskWhereUniqueInput!]
 }
 
-input PersonUpdateArgs {
-  where: PersonWhereUniqueInput!
-  data: PersonUpdateInput!
+input RoleRelateToManyForUpdateInput {
+  disconnect: [RoleWhereUniqueInput!]
+  set: [RoleWhereUniqueInput!]
+  create: [RoleCreateInput!]
+  connect: [RoleWhereUniqueInput!]
 }
 
-input PersonCreateInput {
+input UserUpdateArgs {
+  where: UserWhereUniqueInput!
+  data: UserUpdateInput!
+}
+
+input UserCreateInput {
   name: String
   email: String
   password: String
   tasks: TaskRelateToManyForCreateInput
+  role: RoleRelateToManyForCreateInput
 }
 
 input TaskRelateToManyForCreateInput {
   create: [TaskCreateInput!]
   connect: [TaskWhereUniqueInput!]
+}
+
+input RoleRelateToManyForCreateInput {
+  create: [RoleCreateInput!]
+  connect: [RoleWhereUniqueInput!]
+}
+
+type Setting {
+  id: ID!
+  siteName: String
+  siteDescription: String
+}
+
+input SettingWhereUniqueInput {
+  id: ID
+}
+
+input SettingWhereInput {
+  AND: [SettingWhereInput!]
+  OR: [SettingWhereInput!]
+  NOT: [SettingWhereInput!]
+  id: IDFilter
+  siteName: StringFilter
+  siteDescription: StringFilter
+}
+
+input SettingOrderByInput {
+  id: OrderDirection
+  siteName: OrderDirection
+  siteDescription: OrderDirection
+}
+
+input SettingUpdateInput {
+  siteName: String
+  siteDescription: String
+}
+
+input SettingUpdateArgs {
+  where: SettingWhereUniqueInput!
+  data: SettingUpdateInput!
+}
+
+input SettingCreateInput {
+  siteName: String
+  siteDescription: String
+}
+
+type Role {
+  id: ID!
+  name: String
+  user(
+    where: UserWhereInput! = {}
+    orderBy: [UserOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+  ): [User!]
+  userCount(where: UserWhereInput! = {}): Int
+}
+
+input RoleWhereUniqueInput {
+  id: ID
+}
+
+input RoleWhereInput {
+  AND: [RoleWhereInput!]
+  OR: [RoleWhereInput!]
+  NOT: [RoleWhereInput!]
+  id: IDFilter
+  name: StringFilter
+  user: UserManyRelationFilter
+}
+
+input UserManyRelationFilter {
+  every: UserWhereInput
+  some: UserWhereInput
+  none: UserWhereInput
+}
+
+input RoleOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+}
+
+input RoleUpdateInput {
+  name: String
+  user: UserRelateToManyForUpdateInput
+}
+
+input UserRelateToManyForUpdateInput {
+  disconnect: [UserWhereUniqueInput!]
+  set: [UserWhereUniqueInput!]
+  create: [UserCreateInput!]
+  connect: [UserWhereUniqueInput!]
+}
+
+input RoleUpdateArgs {
+  where: RoleWhereUniqueInput!
+  data: RoleUpdateInput!
+}
+
+input RoleCreateInput {
+  name: String
+  user: UserRelateToManyForCreateInput
+}
+
+input UserRelateToManyForCreateInput {
+  create: [UserCreateInput!]
+  connect: [UserWhereUniqueInput!]
 }
 
 """
@@ -260,36 +370,51 @@ type Mutation {
   updateTasks(data: [TaskUpdateArgs!]!): [Task]
   deleteTask(where: TaskWhereUniqueInput!): Task
   deleteTasks(where: [TaskWhereUniqueInput!]!): [Task]
-  createPerson(data: PersonCreateInput!): Person
-  createPeople(data: [PersonCreateInput!]!): [Person]
-  updatePerson(where: PersonWhereUniqueInput!, data: PersonUpdateInput!): Person
-  updatePeople(data: [PersonUpdateArgs!]!): [Person]
-  deletePerson(where: PersonWhereUniqueInput!): Person
-  deletePeople(where: [PersonWhereUniqueInput!]!): [Person]
+  createUser(data: UserCreateInput!): User
+  createUsers(data: [UserCreateInput!]!): [User]
+  updateUser(where: UserWhereUniqueInput!, data: UserUpdateInput!): User
+  updateUsers(data: [UserUpdateArgs!]!): [User]
+  deleteUser(where: UserWhereUniqueInput!): User
+  deleteUsers(where: [UserWhereUniqueInput!]!): [User]
+  createSetting(data: SettingCreateInput!): Setting
+  createSettings(data: [SettingCreateInput!]!): [Setting]
+  updateSetting(
+    where: SettingWhereUniqueInput!
+    data: SettingUpdateInput!
+  ): Setting
+  updateSettings(data: [SettingUpdateArgs!]!): [Setting]
+  deleteSetting(where: SettingWhereUniqueInput!): Setting
+  deleteSettings(where: [SettingWhereUniqueInput!]!): [Setting]
+  createRole(data: RoleCreateInput!): Role
+  createRoles(data: [RoleCreateInput!]!): [Role]
+  updateRole(where: RoleWhereUniqueInput!, data: RoleUpdateInput!): Role
+  updateRoles(data: [RoleUpdateArgs!]!): [Role]
+  deleteRole(where: RoleWhereUniqueInput!): Role
+  deleteRoles(where: [RoleWhereUniqueInput!]!): [Role]
   endSession: Boolean!
-  authenticatePersonWithPassword(
+  authenticateUserWithPassword(
     email: String!
     password: String!
-  ): PersonAuthenticationWithPasswordResult
-  createInitialPerson(
-    data: CreateInitialPersonInput!
-  ): PersonAuthenticationWithPasswordSuccess!
+  ): UserAuthenticationWithPasswordResult
+  createInitialUser(
+    data: CreateInitialUserInput!
+  ): UserAuthenticationWithPasswordSuccess!
 }
 
-union PersonAuthenticationWithPasswordResult =
-    PersonAuthenticationWithPasswordSuccess
-  | PersonAuthenticationWithPasswordFailure
+union UserAuthenticationWithPasswordResult =
+    UserAuthenticationWithPasswordSuccess
+  | UserAuthenticationWithPasswordFailure
 
-type PersonAuthenticationWithPasswordSuccess {
+type UserAuthenticationWithPasswordSuccess {
   sessionToken: String!
-  item: Person!
+  item: User!
 }
 
-type PersonAuthenticationWithPasswordFailure {
+type UserAuthenticationWithPasswordFailure {
   message: String!
 }
 
-input CreateInitialPersonInput {
+input CreateInitialUserInput {
   name: String
   email: String
   password: String
@@ -304,19 +429,35 @@ type Query {
   ): [Task!]
   task(where: TaskWhereUniqueInput!): Task
   tasksCount(where: TaskWhereInput! = {}): Int
-  people(
-    where: PersonWhereInput! = {}
-    orderBy: [PersonOrderByInput!]! = []
+  users(
+    where: UserWhereInput! = {}
+    orderBy: [UserOrderByInput!]! = []
     take: Int
     skip: Int! = 0
-  ): [Person!]
-  person(where: PersonWhereUniqueInput!): Person
-  peopleCount(where: PersonWhereInput! = {}): Int
+  ): [User!]
+  user(where: UserWhereUniqueInput!): User
+  usersCount(where: UserWhereInput! = {}): Int
+  settings(
+    where: SettingWhereInput! = {}
+    orderBy: [SettingOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+  ): [Setting!]
+  setting(where: SettingWhereUniqueInput!): Setting
+  settingsCount(where: SettingWhereInput! = {}): Int
+  roles(
+    where: RoleWhereInput! = {}
+    orderBy: [RoleOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+  ): [Role!]
+  role(where: RoleWhereUniqueInput!): Role
+  rolesCount(where: RoleWhereInput! = {}): Int
   keystone: KeystoneMeta!
   authenticatedItem: AuthenticatedItem
 }
 
-union AuthenticatedItem = Person
+union AuthenticatedItem = User
 
 type KeystoneMeta {
   adminMeta: KeystoneAdminMeta!
